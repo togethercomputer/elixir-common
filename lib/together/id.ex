@@ -129,7 +129,8 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
 
     @rfc_variant 2
 
-    @spec bingenerate() :: uuid_binary
+    @doc false
+    @spec bingenerate :: uuid_binary
     def bingenerate do
       time = System.system_time(:millisecond)
       <<rand_a::12, rand_b::62, _::6>> = :crypto.strong_rand_bytes(10)
@@ -176,6 +177,36 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     end
 
     @doc """
+    Convert a UUID, regardless of current format, into its raw binary form
+
+    Same as `to_binary/1` but raises if conversion fails.
+
+    ## Examples
+
+        iex> Together.ID.to_binary!(<<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>)
+        <<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>
+
+        iex> Together.ID.to_binary!("01933061-6aa3-7b27-8d2e-ea7eaa5a7346")
+        <<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>
+
+        iex> Together.ID.to_binary!("test_CHErKsMSgQVrdQxEj7nmB")
+        <<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>
+
+        iex> Together.ID.to_binary!("bad data")
+        ** (ArgumentError) invalid UUID format
+
+    """
+    @spec to_binary!(uuid_binary) :: uuid_binary | no_return
+    @spec to_binary!(uuid_string) :: uuid_binary | no_return
+    @spec to_binary!(uuid_slug) :: uuid_binary | no_return
+    def to_binary!(uuid) do
+      case to_binary(uuid) do
+        {:ok, uuid_binary} -> uuid_binary
+        :error -> raise ArgumentError, "invalid UUID format"
+      end
+    end
+
+    @doc """
     Convert a UUID, regardless of current format, to a standard string form
 
     ## Examples
@@ -206,6 +237,36 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     def to_uuid(uuid_slug) do
       with {:ok, _prefix, uuid_string} <- slug_to_uuid(uuid_slug) do
         {:ok, uuid_string}
+      end
+    end
+
+    @doc """
+    Convert a UUID, regardless of current format, to a standard string form
+
+    Same as `to_uuid/1` but raises if conversion fails.
+
+    ## Examples
+
+        iex> Together.ID.to_uuid!(<<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>)
+        "01933061-6aa3-7b27-8d2e-ea7eaa5a7346"
+
+        iex> Together.ID.to_uuid!("01933061-6aa3-7b27-8d2e-ea7eaa5a7346")
+        "01933061-6aa3-7b27-8d2e-ea7eaa5a7346"
+
+        iex> Together.ID.to_uuid!("test_CHErKsMSgQVrdQxEj7nmB")
+        "01933061-6aa3-7b27-8d2e-ea7eaa5a7346"
+
+        iex> Together.ID.to_uuid!("bad data")
+        ** (ArgumentError) invalid UUID format
+
+    """
+    @spec to_uuid!(uuid_binary) :: uuid_string | no_return
+    @spec to_uuid!(uuid_string) :: uuid_string | no_return
+    @spec to_uuid!(uuid_slug) :: uuid_string | no_return
+    def to_uuid!(uuid) do
+      case to_uuid(uuid) do
+        {:ok, uuid_string} -> uuid_string
+        :error -> raise ArgumentError, "invalid UUID format"
       end
     end
 
@@ -245,6 +306,36 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     end
 
     @doc """
+    Convert a UUID, regardless of current format, to a base-58 encoded slug without prefix
+
+    Same as `to_slug/1` but raises if conversion fails.
+
+    ## Examples
+
+        iex> Together.ID.to_slug!(<<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>)
+        "CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("01933061-6aa3-7b27-8d2e-ea7eaa5a7346")
+        "CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("test_CHErKsMSgQVrdQxEj7nmB")
+        "test_CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("bad data")
+        ** (ArgumentError) invalid UUID format
+
+    """
+    @spec to_slug!(uuid_binary) :: uuid_slug | no_return
+    @spec to_slug!(uuid_string) :: uuid_slug | no_return
+    @spec to_slug!(uuid_slug) :: uuid_slug | no_return
+    def to_slug!(uuid) do
+      case to_slug(uuid) do
+        {:ok, uuid_slug} -> uuid_slug
+        :error -> raise ArgumentError, "invalid UUID format"
+      end
+    end
+
+    @doc """
     Convert a UUID, regardless of current format, to a base-58 encoded slug with prefix
 
     ## Examples
@@ -279,6 +370,36 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
       end
     end
 
+    @doc """
+    Convert a UUID, regardless of current format, to a base-58 encoded slug with prefix
+
+    Same as `to_slug/2` but raises if conversion fails.
+
+    ## Examples
+
+        iex> Together.ID.to_slug!(<<1, 147, 48, 97, 106, 163, 123, 39, 141, 46, 234, 126, 170, 90, 115, 70>>, "test")
+        "test_CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("01933061-6aa3-7b27-8d2e-ea7eaa5a7346", "test")
+        "test_CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("test_CHErKsMSgQVrdQxEj7nmB", "test")
+        "test_CHErKsMSgQVrdQxEj7nmB"
+
+        iex> Together.ID.to_slug!("bad data", "test")
+        ** (ArgumentError) invalid UUID format
+
+    """
+    @spec to_slug!(uuid_binary, String.t()) :: uuid_slug | no_return
+    @spec to_slug!(uuid_string, String.t()) :: uuid_slug | no_return
+    @spec to_slug!(uuid_slug, String.t()) :: uuid_slug | no_return
+    def to_slug!(uuid, prefix) do
+      case to_slug(uuid, prefix) do
+        {:ok, uuid_slug} -> uuid_slug
+        :error -> raise ArgumentError, "invalid UUID format"
+      end
+    end
+
     @spec binary_to_slug(uuid_binary, String.t()) :: {:ok, uuid_slug} | :error
     defp binary_to_slug(<<_::128>> = uuid_binary, ""), do: {:ok, encode_base58(uuid_binary)}
 
@@ -304,7 +425,7 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     end
 
     @spec slug_to_uuid(uuid_slug) :: {:ok, String.t(), uuid_string} | :error
-    def slug_to_uuid(uuid_slug) do
+    defp slug_to_uuid(uuid_slug) do
       with {:ok, prefix, uuid_binary} <- slug_to_binary(uuid_slug),
            {:ok, uuid_string} <- binary_to_uuid(uuid_binary) do
         {:ok, prefix, uuid_string}
@@ -385,6 +506,31 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     #
 
     @doc """
+    Extract the timestamp embedded in the UUIDv7
+
+    ## Examples
+
+        iex> Together.ID.extract_timestamp("01933061-6aa3-7b27-8d2e-ea7eaa5a7346")
+        {:ok, ~U[2024-11-15 15:11:50.947Z]}
+
+        iex> Together.ID.extract_timestamp("test_CQGFY5NK2muwxrpHsNJ28")
+        {:ok, ~U[2025-06-18 19:38:02.580Z]}
+
+        iex> Together.ID.extract_timestamp("bad data")
+        :error
+
+    """
+    @spec extract_timestamp(uuid_binary) :: {:ok, DateTime.t()} | :error
+    def extract_timestamp(uuid) do
+      with {:ok, <<timestamp::big-unsigned-integer-size(48), _rest::binary>>} <- to_binary(uuid),
+           {:ok, datetime} <- DateTime.from_unix(timestamp, :millisecond) do
+        {:ok, datetime}
+      else
+        _ -> :error
+      end
+    end
+
+    @doc """
     Get minimum and maximum UUID values for a given creation date
 
     A fun side-effect of the UUIDv7 format is the ability to bound the range of IDs that could
@@ -394,7 +540,7 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
     The lower bound is inclusive, meaning it is possible (though extremely unlikely) to generate
     an ID with that value. The upper bound is exclusive, as it belongs to the next calendar date.
 
-    ## Examples
+    ## Example
 
       iex> Together.ID.min_max(~D[2025-03-01])
       {"01954f00-b000-7000-8000-000000000000", "01955427-0c00-7000-8000-000000000000"}
