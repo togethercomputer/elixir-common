@@ -18,6 +18,8 @@ defmodule Together.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:ecto, "~> 3.5", optional: true}
+    ]
   end
 end
