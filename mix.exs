@@ -25,8 +25,9 @@ defmodule Together.MixProject do
 
   defp deps do
     [
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ecto, "~> 3.5", optional: true},
-      {:ex_doc, "~> 0.38", runtime: false}
+      {:ex_doc, "~> 0.38", only: [:dev], runtime: false}
     ]
   end
 
