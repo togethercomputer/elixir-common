@@ -1,0 +1,13 @@
+{
+  "id": 12345,
+  "other": "data",
+  "nested": {
+    "related_id": "f91dea2c-14e4-4ac2-a09a-f451b14e1f36"
+  },
+  "related": {
+    "id": "f91dea2c-14e4-4ac2-a09a-f451b14e1f36"
+  },
+  "stytch_style_id": "organization-test-1917c469-dc9e-487d-a019-b15e36cb5cae",
+  "null_id": null,
+  "custom": 67890
+}
