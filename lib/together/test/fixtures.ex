@@ -62,62 +62,63 @@ defmodule Together.Test.Fixtures do
   @spec randomize(any, [String.t()]) :: any
   def randomize(value, extra_keys) do
     id_map = Process.get(@id_map_dictionary_key, %{})
-    {id_map, value} = randomize(id_map, value, extra_keys)
+    {id_map, value} = do_randomize(id_map, value, extra_keys, false)
     Process.put(@id_map_dictionary_key, id_map)
 
     value
   end
 
-  @spec randomize(map, any, [String.t()]) :: {map, any}
-  defp randomize(id_map, map_value, extra_keys) when is_map(map_value) do
-    Enum.reduce(map_value, {id_map, %{}}, fn
-      {key, value}, {id_map, modified_map} ->
-        if key == "id" or String.ends_with?(key, "_id") or key in extra_keys do
-          cond do
-            is_nil(value) ->
-              {id_map, modified_map}
+  @spec do_randomize(map, any, [String.t()], boolean) :: {map, any}
+  defp do_randomize(ids, value, extra_keys, is_id?)
 
-            is_integer(value) ->
-              new_id = Map.get_lazy(id_map, value, fn -> System.unique_integer([:positive]) end)
-              {Map.put(id_map, value, new_id), Map.put(modified_map, key, new_id)}
+  # Maps
+  defp do_randomize(id_map, map_value, extra_keys, _is_id?) when is_map(map_value) do
+    Enum.reduce(map_value, {id_map, %{}}, fn {key, value}, {id_map, modified_map} ->
+      is_id? = key == "id" or String.ends_with?(key, "_id") or key in extra_keys
 
-            is_binary(value) ->
-              case Regex.scan(@uuid_re, value) do
-                [] ->
-                  new_id = Map.get_lazy(id_map, value, fn -> "gen_" <> Ecto.UUID.generate() end)
-                  {Map.put(id_map, value, new_id), Map.put(modified_map, key, new_id)}
-
-                matches ->
-                  {id_map, modified_value} =
-                    Enum.reduce(matches, {id_map, value}, fn [match], {id_map, modified_value} ->
-                      new_id = Map.get_lazy(id_map, match, fn -> Ecto.UUID.generate() end)
-
-                      {Map.put(id_map, match, new_id),
-                       String.replace(modified_value, match, new_id)}
-                    end)
-
-                  {id_map, Map.put(modified_map, key, modified_value)}
-              end
-
-            :else ->
-              {id_map, modified_map}
-          end
-        else
-          {id_map, modified_value} = randomize(id_map, value, extra_keys)
-          {id_map, Map.put(modified_map, key, modified_value)}
-        end
+      {id_map, modified_value} = do_randomize(id_map, value, extra_keys, is_id?)
+      {id_map, Map.put(modified_map, key, modified_value)}
     end)
   end
 
-  defp randomize(id_map, list_value, extra_keys) when is_list(list_value) do
+  # Lists
+  defp do_randomize(id_map, list_value, extra_keys, _is_id?) when is_list(list_value) do
     {id_map, list_value} =
       Enum.reduce(list_value, {id_map, []}, fn list_element, {id_map, modified_list} ->
-        {id_map, modified_list_element} = randomize(id_map, list_element, extra_keys)
+        {id_map, modified_list_element} = do_randomize(id_map, list_element, extra_keys, false)
         {id_map, [modified_list_element | modified_list]}
       end)
 
     {id_map, Enum.reverse(list_value)}
   end
 
-  defp randomize(id_map, value, _extra_keys), do: {id_map, value}
+  # Integer IDs
+  defp do_randomize(id_map, integer_value, _extra_keys, true) when is_integer(integer_value) do
+    new_id = Map.get_lazy(id_map, integer_value, fn -> System.unique_integer([:positive]) end)
+    new_id_map = Map.put_new(id_map, integer_value, new_id)
+
+    {new_id_map, new_id}
+  end
+
+  # Binary IDs
+  defp do_randomize(id_map, binary_value, _extra_keys, true) when is_binary(binary_value) do
+    case Regex.scan(@uuid_re, binary_value) do
+      [] ->
+        new_id = Map.get_lazy(id_map, binary_value, fn -> "gen_" <> Ecto.UUID.generate() end)
+        {Map.put(id_map, binary_value, new_id), new_id}
+
+      matches ->
+        {id_map, modified_value} =
+          Enum.reduce(matches, {id_map, binary_value}, fn [match], {id_map, modified_value} ->
+            new_id = Map.get_lazy(id_map, match, fn -> Ecto.UUID.generate() end)
+
+            {Map.put(id_map, match, new_id), String.replace(modified_value, match, new_id)}
+          end)
+
+        {id_map, modified_value}
+    end
+  end
+
+  # Nil and non-ID values
+  defp do_randomize(id_map, value, _extra_keys, _is_id?), do: {id_map, value}
 end
