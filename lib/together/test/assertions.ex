@@ -1,8 +1,20 @@
-defmodule Together.Assertions do
+defmodule Together.Test.Assertions do
   @moduledoc """
   Helpers for easy-to-read tests
 
   This module makes heavy use of macros to preserve nice error messages.
+
+  ## Example
+
+      defmodule MyApp.DataCase do
+        # ...
+
+        using do
+          quote do
+            # ...
+            import Together.Test.Assertions
+          end
+        end
   """
 
   @doc """
