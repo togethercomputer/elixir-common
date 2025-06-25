@@ -9,7 +9,7 @@ defmodule Together.Test.FixturesTest do
     test "loads and randomizes a fixture" do
       output = Fixtures.load("test/fixture/example.json", keys: ["custom"])
 
-      assert output["id"] != 12345
+      assert output["id"] != 12_345
       assert is_integer(output["id"])
       assert output["id"] > 0
 
@@ -29,7 +29,7 @@ defmodule Together.Test.FixturesTest do
 
       assert is_nil(output["null_id"])
 
-      assert output["custom"] != 12345
+      assert output["custom"] != 12_345
       assert is_integer(output["custom"])
       assert output["custom"] > 0
     end
@@ -38,17 +38,17 @@ defmodule Together.Test.FixturesTest do
   describe "randomize/2" do
     test "randomizes integer IDs" do
       input = %{
-        "id" => 12345,
-        "another_id" => 67890
+        "id" => 12_345,
+        "another_id" => 67_890
       }
 
       output = Fixtures.randomize(input, [])
 
-      assert output["id"] != 12345
+      assert output["id"] != 12_345
       assert is_integer(output["id"])
       assert output["id"] > 0
 
-      assert output["another_id"] != 67890
+      assert output["another_id"] != 67_890
       assert is_integer(output["another_id"])
       assert output["another_id"] > 0
     end
@@ -91,15 +91,15 @@ defmodule Together.Test.FixturesTest do
 
     test "mirrors matching IDs in the same file" do
       input = %{
-        "id" => 12345,
-        "mirror_id" => 12345,
+        "id" => 12_345,
+        "mirror_id" => 12_345,
         "my_id" => "1d6f6021-150e-4839-8e06-edf50fac387b",
         "mirror_my_id" => "1d6f6021-150e-4839-8e06-edf50fac387b"
       }
 
       output = Fixtures.randomize(input, [])
 
-      assert output["id"] != 12345
+      assert output["id"] != 12_345
       assert output["mirror_id"] == output["id"]
 
       assert output["my_id"] != "1d6f6021-150e-4839-8e06-edf50fac387b"
@@ -108,13 +108,13 @@ defmodule Together.Test.FixturesTest do
 
     test "mirrors matching IDs across files" do
       input1 = %{
-        "id" => 12345,
-        "mirror_id" => 67890
+        "id" => 12_345,
+        "mirror_id" => 67_890
       }
 
       input2 = %{
-        "id" => 67890,
-        "mirror_id" => 12345
+        "id" => 67_890,
+        "mirror_id" => 12_345
       }
 
       output1 = Fixtures.randomize(input1, [])
@@ -126,7 +126,7 @@ defmodule Together.Test.FixturesTest do
 
     test "does not modify non-ID keys" do
       input = %{
-        "id" => 12345,
+        "id" => 12_345,
         "name" => "Test",
         "description" => "This is a test"
       }
