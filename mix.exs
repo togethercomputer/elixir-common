@@ -36,6 +36,8 @@ defmodule Together.MixProject do
       main: "readme",
       extras: [
         "README.md": [title: "Introduction"],
+        "CODE_OF_CONDUCT.md": [title: "Code of Conduct"],
+        "CONTRIBUTING.md": [title: "Contributing"],
         LICENSE: [title: "License"]
       ],
       formatters: ["html"],
