@@ -5,11 +5,51 @@ if Code.ensure_loaded?(Ecto.ParameterizedType) do
 
     Taken in part from https://danschultzer.com/posts/prefixed-base58-uuidv7-object-ids-with-ecto.
 
-    ## Examples
+    ## Overview
 
-        @primary_key {:id, Together.ID, prefix: "acct", autogenerate: true}
+    IDs in this format have multiple formats:
+
+        # Human-readable, URL-safe "slug" format with prefix
+        "test_CQZePnpR8iHbWV1Q3cd2Y"
+
+        # Standard UUIDv7 string format
+        "0197b3dc-ac16-79d7-b795-918a31c6a761"
+
+        # Raw binary format
+        <<1, 151, 179, 220, 172, 22, 121, 215, 183, 149, 145, 138, 49, 198, 167, 97>>
+
+    The slug format includes a prefix, which helps identify the type of record. All of the formats
+    are interchangeable using `to_binary/1`, `to_uuid/1`, and `to_slug/1` (and related functions).
+    By default, IDs are expressed in slug format.
+
+    Using this format has a few benefits:
+
+    1. UUIDs in general provide sufficient guarantees against collision across distributed systems.
+    2. UUIDv7 in particular contains a time-based component, meaning the creation date of a record
+      is encoded into the ID itself. The fact that this component is a prefix also makes databases
+      like PostgreSQL more performant than fully-random IDs (such as UUIDv4).
+    3. Prefixed IDs enable immediate detection of record type, without lookup.
+    4. Base-58 encoding makes the IDs URL-safe.
+    5. Removing commonly misread characters assists if anyone ever has to type one.
+
+    Note that slugs are case-sensitive.
+
+    ## Example
+
+    Include the following module attributes in a module that defines or references an Ecto schema:
+
+        @primary_key {:id, Together.ID, prefix: "test", autogenerate: true}
         @foreign_key_type Together.ID
 
+    Change the `prefix` option to a unique (per application) value. Short, 3- or 4-character
+    prefixes are recommended; for example, `user`, `key`, `org`, etc.
+
+    If referencing a field in another schema without an Ecto association, you can use:
+
+        field :user_id, Together.ID, prefix: "user"
+
+    When creating a column for this type in a migration, use the same type as you would for
+    `Ecto.UUID`, such as `:uuid` for PostgreSQL.
     """
     use Ecto.ParameterizedType
 

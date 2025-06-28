@@ -6,6 +6,9 @@ defmodule Together.Test.Assertions do
 
   ## Example
 
+  For easy access to these assertions in a typical Phoenix application, import them in your
+  `DataCase` and other test case modules:
+
       defmodule MyApp.DataCase do
         # ...
 
