@@ -1,8 +1,8 @@
 # Elixir Common
 
-_Shared modules and utilities for Elixir services at Together AI_
+[![Documentation](https://img.shields.io/badge/-Documentation-4B275F?logo=elixir&logoColor=white)](https://togethercomputer.github.io/elixir-common)
 
----
+_Shared modules and utilities for Elixir services at Together AI_
 
 ## What is this?
 
