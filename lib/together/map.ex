@@ -13,10 +13,13 @@ defmodule Together.Map do
       iex> invert(%{a: 1, b: 2})
       %{1 => :a, 2 => :b}
 
-      # this one depends a bit on ordering of the map inside the BEAM, but wanted to show that
-      # no values get aggregated.
-      iex> invert(%{a: 1, b: 1})
-      %{1 => :b}
+      # a bit weird, but the point is showing that if values are duplicated one of the keys "survives",
+      # while the other is dropped, whether :a or :b "survive" is non deterministic.
+      iex> result = invert(%{a: 1, b: 1})
+      iex> Map.keys(result)
+      [1]
+      iex> result[1] in [:a, :b]
+      true
 
       iex> invert(%{})
       %{}
