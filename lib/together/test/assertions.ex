@@ -179,4 +179,45 @@ defmodule Together.Test.Assertions do
   defp var_context({name, meta, context}) do
     {name, meta[:counter] || context}
   end
+
+  @doc """
+  Assert a collection contains an item
+
+  ## Example
+
+      my_function()  # returns [1, 2]
+      |> assert_contains(2)
+
+  """
+  defmacro assert_contains(collection, item) do
+    quote do
+      collection = unquote(collection)
+      assert unquote(item) in collection
+      collection
+    end
+  end
+
+  @doc """
+  Assert a collection contains an item matching the given pattern
+
+  ## Example
+
+      my_function()  # returns [%{"key" => "value"}, %{"other_key" => "other"}]
+      |> assert_contains_match(%{"key" => _})
+
+  """
+  defmacro assert_contains_match(collection, pattern) do
+    quote do
+      collection = unquote(collection)
+
+      assert Enum.any?(collection, fn item ->
+               case item do
+                 unquote(pattern) -> true
+                 _ -> false
+               end
+             end)
+
+      collection
+    end
+  end
 end
