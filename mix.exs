@@ -7,6 +7,7 @@ defmodule Together.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       deps: deps(),
 
       # Docs
@@ -35,7 +36,29 @@ defmodule Together.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ecto, "~> 3.5", optional: true},
-      {:ex_doc, "~> 0.38", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.38", only: [:dev], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      check: [
+        "test --warnings-as-errors",
+        "deps.unlock --check-unused",
+        "format --check-formatted",
+        "credo",
+        "sobelow --config",
+        "dialyzer --format dialyxir"
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        check: :test
+      ]
     ]
   end
 
