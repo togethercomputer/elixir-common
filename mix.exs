@@ -3,6 +3,7 @@ defmodule Together.MixProject do
 
   def project do
     [
+      aliases: aliases(),
       app: :together,
       version: "0.1.0",
       elixir: "~> 1.18",
@@ -36,7 +37,29 @@ defmodule Together.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ecto, "~> 3.5", optional: true},
       # Available in `test` to avoid recompilation in CI just for docs
-      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      check: [
+        "test --warnings-as-errors",
+        "deps.unlock --check-unused",
+        "format --check-formatted",
+        "credo",
+        "sobelow --config",
+        "dialyzer --format dialyxir"
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        check: :test
+      ]
     ]
   end
 
