@@ -70,5 +70,87 @@ if Code.ensure_loaded?(Ecto.Changeset) do
         changeset
       end
     end
+
+    @doc """
+    Validate email address format in a changeset
+
+    ## Examples
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: nil})
+        iex> Together.Changeset.validate_email_address(changeset, :email).valid?
+        true
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "example@example.com"})
+        iex> Together.Changeset.validate_email_address(changeset, :email).valid?
+        true
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "example.com"})
+        iex> Together.Changeset.validate_email_address(changeset, :email).valid?
+        false
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "a@example.com."})
+        iex> Together.Changeset.validate_email_address(changeset, :email).valid?
+        false
+
+    """
+    @spec validate_email_address(Changeset.t(), atom()) :: Changeset.t()
+    def validate_email_address(changeset, field) do
+      Changeset.validate_format(
+        changeset,
+        field,
+        # https://www.tempmail.us.com/en/elixir/implementing-w3c-compliant-email-validation-in-elixir
+        ~r/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        message: "is not a valid email address"
+      )
+    end
+
+    @doc """
+    Validate email domain format in a changeset
+
+    ## Examples
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "example@example.com"})
+        iex> Together.Changeset.validate_email_domain(changeset, :email).valid?
+        false
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "example.com"})
+        iex> Together.Changeset.validate_email_domain(changeset, :email).valid?
+        true
+
+        iex> changeset = Ecto.Changeset.change({%{}, %{email: :string}}, %{email: "example.com."})
+        iex> Together.Changeset.validate_email_domain(changeset, :email).valid?
+        false
+
+    """
+    @spec validate_email_domain(Changeset.t(), atom()) :: Changeset.t()
+    def validate_email_domain(changeset, field) do
+      changeset
+      |> Changeset.validate_format(
+        field,
+        # https://www.tempmail.us.com/en/elixir/implementing-w3c-compliant-email-validation-in-elixir
+        ~r/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        message: "is not a valid email domain"
+      )
+      |> validate_domain_structure(field)
+    end
+
+    @spec validate_domain_structure(Changeset.t(), atom()) :: Changeset.t()
+    defp validate_domain_structure(changeset, field) do
+      address = Changeset.get_field(changeset, field)
+
+      cond do
+        not is_binary(address) ->
+          changeset
+
+        String.contains?(address, "..") ->
+          Changeset.add_error(changeset, field, "is not a valid email domain")
+
+        String.starts_with?(address, ".") or String.ends_with?(address, ".") ->
+          Changeset.add_error(changeset, field, "is not a valid email domain")
+
+        :else ->
+          changeset
+      end
+    end
   end
 end
